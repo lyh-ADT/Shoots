@@ -1,3 +1,4 @@
+from Shoots.bin.map import Map
 import random
 
 def print_map(m):
@@ -14,9 +15,6 @@ class MapBuilder:
         self.map = []
         self.candidate = []
         self.path = []
-        self.WALL = 0
-        self.ROAD = 1
-        self.UNSET = 2
 
     def build_dfs(self):
         '''
@@ -39,7 +37,7 @@ class MapBuilder:
 
     def init_map(self):
         self.map = []
-        c = [self.UNSET, self.WALL]
+        c = [Map.UNSET, Map.WALL]
         for x in range(self.size):
             if x % 2 == 0:
                 row = []
@@ -47,7 +45,7 @@ class MapBuilder:
                     row.append(c[y%2])
                 
             else:
-                row = [self.WALL] * self.size
+                row = [Map.WALL] * self.size
             self.map.append(row)
 
     def dfs(self):
@@ -88,21 +86,21 @@ class MapBuilder:
         else:
             x = round((loc1[0] + loc2[0]) / 2)
             y = loc1[1]
-        self.map[loc1[0]][loc1[1]] = self.ROAD
-        self.map[loc2[0]][loc2[1]] = self.ROAD
-        self.map[x][y] = self.ROAD
+        self.map[loc1[0]][loc1[1]] = Map.ROAD
+        self.map[loc2[0]][loc2[1]] = Map.ROAD
+        self.map[x][y] = Map.ROAD
 
     def location_valid(self, loc):
         return (0 <= loc[0] and loc[0] < self.size) and (0 <= loc[1] and loc[1] < self.size)
 
     def location_is_unset(self, loc):
         if self.location_valid(loc):
-            return self.map[loc[0]][loc[1]] == self.UNSET
+            return self.map[loc[0]][loc[1]] == Map.UNSET
         return False
     
     def location_is_road(self, loc):
         if self.location_valid(loc):
-            return self.map[loc[0]][loc[1]] == self.ROAD
+            return self.map[loc[0]][loc[1]] == Map.ROAD
         return False
 
     def get_sibling_unset(self, loc):

@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 from random import Random
 
+from ..bin.map import Map
 from ..bin.map_builder import MapBuilder
 
 class TestMapBuilderInitMapMethod(unittest.TestCase):
@@ -9,11 +10,11 @@ class TestMapBuilderInitMapMethod(unittest.TestCase):
         m = MapBuilder(5)
         m.init_map()
         expected = [
-            [m.UNSET, m.WALL, m.UNSET, m.WALL, m.UNSET],
-            [m.WALL, m.WALL, m.WALL, m.WALL, m.WALL],
-            [m.UNSET, m.WALL, m.UNSET, m.WALL, m.UNSET],
-            [m.WALL, m.WALL, m.WALL, m.WALL, m.WALL],
-            [m.UNSET, m.WALL, m.UNSET, m.WALL, m.UNSET]
+            [Map.UNSET, Map.WALL, Map.UNSET, Map.WALL, Map.UNSET],
+            [Map.WALL, Map.WALL, Map.WALL, Map.WALL, Map.WALL],
+            [Map.UNSET, Map.WALL, Map.UNSET, Map.WALL, Map.UNSET],
+            [Map.WALL, Map.WALL, Map.WALL, Map.WALL, Map.WALL],
+            [Map.UNSET, Map.WALL, Map.UNSET, Map.WALL, Map.UNSET]
         ]
 
         self.assertListEqual(expected, m.map)
@@ -22,10 +23,10 @@ class TestMapBuilderInitMapMethod(unittest.TestCase):
         m = MapBuilder(4)
         m.init_map()
         expected = [
-            [m.UNSET, m.WALL, m.UNSET, m.WALL],
-            [m.WALL, m.WALL, m.WALL, m.WALL],
-            [m.UNSET, m.WALL, m.UNSET, m.WALL],
-            [m.WALL, m.WALL, m.WALL, m.WALL]
+            [Map.UNSET, Map.WALL, Map.UNSET, Map.WALL],
+            [Map.WALL, Map.WALL, Map.WALL, Map.WALL],
+            [Map.UNSET, Map.WALL, Map.UNSET, Map.WALL],
+            [Map.WALL, Map.WALL, Map.WALL, Map.WALL]
         ]
 
         self.assertListEqual(expected, m.map)
@@ -41,11 +42,11 @@ class TestMapBuilderSearchMethod(unittest.TestCase):
         m = MapBuilder(5)
         m.build_dfs()
         expected = [
-            [m.ROAD,m.ROAD,m.ROAD,m.ROAD,m.ROAD],
-            [m.WALL,m.WALL,m.WALL,m.WALL,m.ROAD],
-            [m.ROAD,m.ROAD,m.ROAD,m.ROAD,m.ROAD],
-            [m.ROAD,m.WALL,m.WALL,m.WALL,m.WALL],
-            [m.ROAD,m.ROAD,m.ROAD,m.ROAD,m.ROAD]
+            [Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD],
+            [Map.WALL,Map.WALL,Map.WALL,Map.WALL,Map.ROAD],
+            [Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD],
+            [Map.ROAD,Map.WALL,Map.WALL,Map.WALL,Map.WALL],
+            [Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD]
         ]
         self.assertListEqual(expected, m.map)
     
@@ -55,11 +56,11 @@ class TestMapBuilderSearchMethod(unittest.TestCase):
         m = MapBuilder(5)
         m.build_bfs()
         expected = [
-            [m.ROAD,m.ROAD,m.ROAD,m.ROAD,m.ROAD],
-            [m.WALL,m.WALL,m.WALL,m.WALL,m.ROAD],
-            [m.ROAD,m.ROAD,m.ROAD,m.ROAD,m.ROAD],
-            [m.ROAD,m.WALL,m.ROAD,m.WALL,m.ROAD],
-            [m.ROAD,m.ROAD,m.ROAD,m.WALL,m.ROAD]
+            [Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD],
+            [Map.WALL,Map.WALL,Map.WALL,Map.WALL,Map.ROAD],
+            [Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD,Map.ROAD],
+            [Map.ROAD,Map.WALL,Map.ROAD,Map.WALL,Map.ROAD],
+            [Map.ROAD,Map.ROAD,Map.ROAD,Map.WALL,Map.ROAD]
         ]
         self.assertListEqual(expected, m.map)
 
