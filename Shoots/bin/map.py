@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 
 class Info:
     FACE_UP = 0
@@ -26,3 +28,6 @@ class Map:
         if self.location_valid(loc):
             return self.map[loc[0]][loc[1]] == Map.ROAD
         return False
+
+    def get_view(self):
+        return deepcopy(self.map)
