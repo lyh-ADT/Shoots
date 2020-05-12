@@ -9,6 +9,12 @@ class Info:
     def __init__(self):
         self.sound = []
         self.shooter = []
+    
+    def get_dict(self):
+        return {
+            'sound':self.sound,
+            'shooter':self.shooter
+        }
 
 
 class Map:

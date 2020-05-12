@@ -7,7 +7,7 @@ class Shooter:
         self.listen = 10 # listen radius
         self.cd = 3 # shot cool down tick
         self.cd_count = 0
-        self.info = None # infomation of environment(sound, vision)
+        self.info = Info() # infomation of environment(sound, vision)
         self.position = (0, 0)
         self.map = map
     
@@ -40,3 +40,13 @@ class Shooter:
         np = (self.position[0], self.position[1]+1)
         if self.map.is_road(np):
             self.position = np
+
+    def get_dict(self):
+        return {
+            'facing':self.face,
+            'vision':self.vision,
+            'listen':self.listen,
+            'cd':self.cd_count,
+            'info':self.info.get_dict(),
+            'position':self.position
+        }

@@ -28,20 +28,22 @@ class Shoots:
         if self.update_frame_callback:
             self.update_frame_callback()
 
-    def process_input(self, player_id, operation):
+    def process_input(self, player, operation):
         op = {
             0:lambda x: x.move_up(),
             1:lambda x: x.move_down(),
             2:lambda x: x.move_left(),
             3:lambda x: x.move_right()
         }
-        player = self.players[player_id]
+        if player not in self.players:
+            print("not join player operation !!!", player, operation)
+            return
         op[operation](player)
 
-    def add_player(self, player):
-        if not isinstance(player, Shooter):
-            raise AttributeError("player must be Shooter or its subclass")
+    def add_player(self):
+        player = Shooter(self.map)
         self.players.append(player)
+        return player
 
     def play(self):
         while True:
