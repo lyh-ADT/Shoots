@@ -2,10 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Client</title>
+    <style>
+        *{
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
+    <script>
+        class Display{
+            constructor(){
+                this.width = 0;
+                this.size_per_block = 50;
+                this.canvas = null;
+                this.map = [];
+                this.initCanvas();
+            }
+
+            initCanvas(){
+                this.width = Math.min(window.innerWidth, window.innerHeight);
+                this.canvas = document.createElement("canvas");
+                this.canvas.width = this.canvas.height = this.width;
+                document.body.appendChild(this.canvas);
+                let ctx = this.canvas.getContext("2d");
+                ctx.fillStyle = "black";
+                ctx.fillRect(0, 0, this.width, this.width);
+            }
+
+            drawMap(){
+                this.size_per_block = Math.round(this.width / (this.map.length+2));
+                
+                let ctx = this.canvas.getContext("2d");
+                ctx.fillStyle = "black";
+                ctx.fillRect(0, 0, this.width, this.width);
+
+                let offset_y=this.size_per_block;
+                for(let row of this.map){
+                    let offset_x=this.size_per_block;
+                    for(let b of row){
+                        if(b){
+                            ctx.fillStyle = "white";
+                        }else{
+                            ctx.fillStyle = "black";
+                        }
+                        ctx.fillRect(offset_x, offset_y, this.size_per_block, this.size_per_block);
+                        offset_x += this.size_per_block;
+                    }
+                    offset_y += this.size_per_block;
+                }
+            }
+        }
+
+    </script>
+    <script>
+        let display = new Display();
+        display.map = [
+            [1,1,1,1,1],
+            [0,0,0,0,1],
+            [1,1,1,1,1],
+            [1,0,1,0,1],
+            [1,1,1,0,1]
+        ];
+        display.drawMap();
+
+    </script>
     <script>
     
         let ws = new WebSocket("ws://"+location.host+"/websocket");
