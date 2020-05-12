@@ -24,6 +24,7 @@ class MapBuilder:
         self.init_map()
         self.path = [(0,0)]
         self.dfs()
+        return self.map
 
     def build_bfs(self):
         '''
@@ -34,6 +35,7 @@ class MapBuilder:
         self.path = []
         self.candidate = []
         self.bfs((0,0))
+        return self.map
 
     def init_map(self):
         self.map = []
