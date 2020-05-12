@@ -17,6 +17,7 @@ class Server:
             self.set_nodelay(True)
             self.shooter = Server.game.add_player()
             Server.sockets.append(self)
+            self.send_infomation()
 
         def on_message(self, message):
             data = json.loads(message)

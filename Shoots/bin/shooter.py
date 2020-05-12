@@ -48,5 +48,6 @@ class Shooter:
             'listen':self.listen,
             'cd':self.cd_count,
             'info':self.info.get_dict(),
-            'position':self.position
+            'position':self.position,
+            'map':self.map.get_view()
         }
