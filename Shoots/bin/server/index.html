@@ -32,25 +32,56 @@
 
             drawMap(){
                 this.size_per_block = Math.round(this.width / (this.map.length+2));
-                
-                let ctx = this.canvas.getContext("2d");
-                ctx.fillStyle = "black";
-                ctx.fillRect(0, 0, this.width, this.width);
 
-                let offset_y=this.size_per_block;
-                for(let row of this.map){
-                    let offset_x=this.size_per_block;
-                    for(let b of row){
-                        if(b){
-                            ctx.fillStyle = "white";
-                        }else{
-                            ctx.fillStyle = "black";
+                this.drawBlock(0, 0, this.width, "black");
+
+                for(let x in this.map){
+                    for(let y in this.map[x]){
+                        let color = "black";
+                        if(this.map[x][y]){
+                            color = "white";
                         }
-                        ctx.fillRect(offset_x, offset_y, this.size_per_block, this.size_per_block);
-                        offset_x += this.size_per_block;
+                        this.drawBlock(parseInt(x)+1, parseInt(y)+1, this.size_per_block, color);
+
                     }
-                    offset_y += this.size_per_block;
                 }
+            }
+
+            drawBlock(x, y, size, color, offset=0, rotate=0){
+                let ctx = this.canvas.getContext("2d");
+                const x_for_canvas = y*this.size_per_block+offset;
+                const y_for_canvas = x*this.size_per_block+offset;
+
+                ctx.translate(x_for_canvas + size/2, y_for_canvas + size/2);
+                ctx.rotate(rotate);
+                ctx.translate(-(x_for_canvas + size/2), -(y_for_canvas + size/2));
+
+                ctx.fillStyle = color;
+                ctx.fillRect(x_for_canvas, y_for_canvas, size, size);
+            }
+
+            drawDot(x, y, size, color, offset=0){
+                let ctx = this.canvas.getContext("2d");
+                ctx.fillStyle = color;
+                ctx.arc(y*this.size_per_block + size + offset, x*this.size_per_block + size + offset, size, 0, 2 * Math.PI);
+                ctx.fill();
+            }
+
+            drawShooter(x, y, isSelf=false){
+                x += 1;
+                y += 1;
+                const shooter_offset = 20;
+                const shooter_size = this.size_per_block-shooter_offset;
+                this.drawBlock(x, y, shooter_size, "red", shooter_offset / 2, Math.PI / 4);
+                if(isSelf){
+                    this.drawDot(x, y, shooter_size / 2, "yellow", shooter_offset / 2);
+                }
+            }
+
+            processData(data){
+                this.map = data.map;
+                this.drawMap();
+                this.drawShooter(data.position[0], data.position[1], true);
             }
         }
 
@@ -76,8 +107,7 @@
         ws.onmessage = function(evt){
             console.log(evt.data);
             let data = JSON.parse(evt.data);
-            display.map = data.map;
-            display.drawMap();
+            display.processData(data);
         }
     </script>
 </body>

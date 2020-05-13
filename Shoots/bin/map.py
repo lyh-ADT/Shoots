@@ -1,4 +1,5 @@
 from copy import deepcopy
+import random
 
 
 class Info:
@@ -37,3 +38,12 @@ class Map:
 
     def get_view(self):
         return deepcopy(self.map)
+
+    def spawn(self):
+        pos = (-1, -1)
+        while not self.is_road(pos):
+            pos = (
+                random.randint(0, self.size-1),
+                random.randint(0, self.size-1)
+            )
+        return pos

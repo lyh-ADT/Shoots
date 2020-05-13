@@ -8,8 +8,8 @@ class Shooter:
         self.cd = 3 # shot cool down tick
         self.cd_count = 0
         self.info = Info() # infomation of environment(sound, vision)
-        self.position = (0, 0)
         self.map = map
+        self.position = self.map.spawn()
     
     def update_info(self, info:Info):
         self.info = info
