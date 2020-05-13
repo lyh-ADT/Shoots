@@ -58,10 +58,13 @@
 
                 ctx.fillStyle = color;
                 ctx.fillRect(x_for_canvas, y_for_canvas, size, size);
+
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
 
             drawDot(x, y, size, color, offset=0){
                 let ctx = this.canvas.getContext("2d");
+                ctx.beginPath();
                 ctx.fillStyle = color;
                 ctx.arc(y*this.size_per_block + size + offset, x*this.size_per_block + size + offset, size, 0, 2 * Math.PI);
                 ctx.fill();
@@ -86,6 +89,46 @@
         }
 
     </script>
+
+    <script>
+        class Operation{
+            OP_MOVE_UP = 0
+            OP_MOVE_DOWN = 1
+            OP_MOVE_LEFT = 2
+            OP_MOVE_RIGHT = 3
+            constructor(websocket){
+                this.websocket = websocket;
+            }
+
+            send(object){
+                this.websocket.send(JSON.stringify(object));
+            }
+
+            move_up(){
+                this.send({
+                    operation:this.OP_MOVE_UP
+                });
+            }
+
+            move_down(){
+                this.send({
+                    operation:this.OP_MOVE_DOWN
+                });
+            }
+
+            move_left(){
+                this.send({
+                    operation:this.OP_MOVE_LEFT
+                });
+            }
+
+            move_right(){
+                this.send({
+                    operation:this.OP_MOVE_RIGHT
+                });
+            }
+        }
+    </script>
     <script>
         let display = new Display();
         // display.map = [
@@ -108,6 +151,25 @@
             console.log(evt.data);
             let data = JSON.parse(evt.data);
             display.processData(data);
+        }
+        
+        let op = new Operation(ws);
+        window.onkeydown = function(evt){
+            console.log(evt);
+            switch(evt.keyCode){
+                case 87: // w
+                    op.move_up();
+                    break;
+                case 83: // s
+                    op.move_down();
+                    break;
+                case 65: // a
+                    op.move_left();
+                    break;
+                case 68: // d
+                    op.move_right();
+                    break;
+            }
         }
     </script>
 </body>

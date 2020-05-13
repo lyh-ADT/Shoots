@@ -17,14 +17,6 @@ class Shoots:
         pass
 
     def update_frame(self):
-        m = self.map.get_view()
-        id_offset = 3
-        for i, p in enumerate(self.players):
-            p_id = i + id_offset
-            p_pos = p.position
-            m[p_pos[0]][p_pos[1]] = p_id
-        self.cur_frame = m
-
         if self.update_frame_callback:
             self.update_frame_callback()
 
@@ -45,7 +37,9 @@ class Shoots:
         self.players.append(player)
         return player
 
-    def play(self):
+    async def play(self):
+        import tornado.gen
         while True:
             self.update_model()
             self.update_frame()
+            await tornado.gen.sleep(0.1)

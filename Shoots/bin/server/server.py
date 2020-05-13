@@ -4,6 +4,7 @@ import tornado.ioloop
 import tornado.options
 import signal
 import json
+import threading
 
 from Shoots.bin.shoots import Shoots
 from Shoots.bin.shooter import Shooter
@@ -25,7 +26,7 @@ class Server:
             Server.game.process_input(self.shooter, op)
 
         def on_close(self):
-            pass
+            Server.sockets.remove(self)
         
         def send_infomation(self):
             self.write_message(self.shooter.get_dict())
@@ -48,10 +49,13 @@ class Server:
     def __init__(self):
         Server.game = Shoots()
         Server.game.update_frame_callback = self.update_callback
-    
+        
     def update_callback(self):
         for i in self.sockets:
-            i.send_infomation()
+            try:
+                i.send_infomation()
+            except tornado.websocket.WebSocketClosedError:
+                self.sockets.remove(i)
         
 
     def run(self, port):
@@ -65,6 +69,7 @@ class Server:
         tornado.options.parse_command_line()
         signal.signal(signal.SIGINT, application.signal_handler)
         tornado.ioloop.PeriodicCallback(application.try_exit, 100).start()
+        tornado.ioloop.IOLoop.instance().spawn_callback(Server.game.play)
         tornado.ioloop.IOLoop.instance().start()
 
 
