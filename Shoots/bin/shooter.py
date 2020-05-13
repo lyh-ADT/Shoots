@@ -1,4 +1,5 @@
-from Shoots.bin.map import Info,Map
+from Shoots.bin.map import Map
+from Shoots.bin.info import Info
 
 class Shooter:
     def __init__(self, map:Map):

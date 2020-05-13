@@ -1,12 +1,8 @@
 from Shoots.bin.map import Map
 from Shoots.bin.shooter import Shooter
+from Shoots.bin.info import Info
 
 class Shoots:
-    OP_MOVE_UP = 0
-    OP_MOVE_DOWN = 1
-    OP_MOVE_LEFT = 2
-    OP_MOVE_RIGHT = 3
-
     def __init__(self):
         self.map = Map(5)
         self.players = []
@@ -14,7 +10,15 @@ class Shoots:
         self.update_frame_callback = None
 
     def update_model(self):
-        pass
+        # simplely add each other, so they can see each other
+        # for a little fun
+        for i in self.players:
+            info = Info()
+            for j in self.players:
+                if i == j:
+                    continue
+                info.shooter.append(j)
+            i.update_info(info)
 
     def update_frame(self):
         if self.update_frame_callback:
@@ -22,10 +26,10 @@ class Shoots:
 
     def process_input(self, player, operation):
         op = {
-            0:lambda x: x.move_up(),
-            1:lambda x: x.move_down(),
-            2:lambda x: x.move_left(),
-            3:lambda x: x.move_right()
+            Info.OP_MOVE_UP:lambda x: x.move_up(),
+            Info.OP_MOVE_DOWN:lambda x: x.move_down(),
+            Info.OP_MOVE_LEFT:lambda x: x.move_left(),
+            Info.OP_MOVE_RIGHT:lambda x: x.move_right()
         }
         if player not in self.players:
             print("not join player operation !!!", player, operation)

@@ -1,23 +1,6 @@
 from copy import deepcopy
 import random
 
-
-class Info:
-    FACE_UP = 0
-    FACE_DONW = 1
-    FACE_LEFT = 2
-    FACE_RIGHT = 3
-    def __init__(self):
-        self.sound = []
-        self.shooter = []
-    
-    def get_dict(self):
-        return {
-            'sound':self.sound,
-            'shooter':self.shooter
-        }
-
-
 class Map:
     WALL = 0
     ROAD = 1

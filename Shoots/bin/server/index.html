@@ -85,6 +85,9 @@
                 this.map = data.map;
                 this.drawMap();
                 this.drawShooter(data.position[0], data.position[1], true);
+                for(let i of data.info.shooter){
+                    this.drawShooter(i[0], i[1], false);
+                }
             }
         }
 
