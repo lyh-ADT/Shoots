@@ -11,7 +11,77 @@
 </head>
 <body>
     <script>
+        class Operation{
+            OP_MOVE_UP = 0
+            OP_MOVE_DOWN = 1
+            OP_MOVE_LEFT = 2
+            OP_MOVE_RIGHT = 3
+            
+            constructor(websocket){
+                this.websocket = websocket;
+            }
+
+            send(object){
+                this.websocket.send(JSON.stringify(object));
+            }
+
+            move_up(){
+                this.send({
+                    operation:this.OP_MOVE_UP
+                });
+            }
+
+            move_down(){
+                this.send({
+                    operation:this.OP_MOVE_DOWN
+                });
+            }
+
+            move_left(){
+                this.send({
+                    operation:this.OP_MOVE_LEFT
+                });
+            }
+
+            move_right(){
+                this.send({
+                    operation:this.OP_MOVE_RIGHT
+                });
+            }
+
+            face_up(){
+                this.send({
+                    operation:Operation.FACE_UP
+                });
+            }
+
+            face_down(){
+                this.send({
+                    operation:Operation.FACE_DONW
+                });
+            }
+
+            face_left(){
+                this.send({
+                    operation:Operation.FACE_LEFT
+                });
+            }
+
+            face_right(){
+                this.send({
+                    operation:Operation.FACE_RIGHT
+                });
+            }
+        }
+        Operation.FACE_UP = 4
+        Operation.FACE_DONW = 5
+        Operation.FACE_LEFT = 6
+        Operation.FACE_RIGHT = 7
+    </script>
+    <script>
         class Display{
+
+
             constructor(){
                 this.width = 0;
                 this.size_per_block = 50;
@@ -70,68 +140,64 @@
                 ctx.fill();
             }
 
-            drawShooter(x, y, isSelf=false){
+            getFacingGradient(x, y, size, offset, facing){
+                let ctx = this.canvas.getContext("2d");
+                const xc0 = y*this.size_per_block+offset;
+                const yc0 = x*this.size_per_block+offset;
+                const xc1 = xc0 + size;
+                const yc1 = yc0 + size;
+                let gradient = null;
+                switch(parseInt(facing)){
+                    case Operation.FACE_UP:
+                        gradient = ctx.createLinearGradient(xc0, yc0, xc1, yc1);
+                        break;
+                    case Operation.FACE_DONW:
+                        gradient = ctx.createLinearGradient(xc1, yc1, xc0, yc0);
+                        break;
+                    case Operation.FACE_LEFT:
+                        gradient = ctx.createLinearGradient(xc0, yc1, xc1, yc0);
+                        break;
+                    case Operation.FACE_RIGHT:
+                        gradient = ctx.createLinearGradient(xc1, yc0, xc0, yc1);
+                        break;
+                    default:
+                        throw Error("not supported facing:"+facing);
+                }
+                const colorStops = {
+                    0: "red",
+                    0.25:"white"
+                };
+                for(let offset in colorStops){
+                    gradient.addColorStop(parseFloat(offset), colorStops[offset]);
+                }
+                return gradient;
+            }
+
+            drawShooter(x, y, face, isSelf=false){
                 x += 1;
                 y += 1;
                 const shooter_offset = 20;
                 const shooter_size = this.size_per_block-shooter_offset;
-                this.drawBlock(x, y, shooter_size, "red", shooter_offset / 2, Math.PI / 4);
-                if(isSelf){
-                    this.drawDot(x, y, shooter_size / 2, "yellow", shooter_offset / 2);
-                }
+                
+                this.drawBlock(x, y, shooter_size, this.getFacingGradient(x, y, shooter_size, shooter_offset / 2, face), shooter_offset / 2, Math.PI / 4);
+                this.drawDot(x, y, shooter_size / 2, isSelf?"black":"yellow", shooter_offset / 2);
             }
 
             processData(data){
                 this.map = data.map;
                 this.drawMap();
-                this.drawShooter(data.position[0], data.position[1], true);
+                this.drawShooter(data.position[0], data.position[1], data.facing, true);
                 for(let i of data.info.shooter){
-                    this.drawShooter(i[0], i[1], false);
+                    let pos = i.position;
+                    let facing = i.facing;
+                    this.drawShooter(pos[0], pos[1], facing, false);
                 }
             }
         }
 
     </script>
 
-    <script>
-        class Operation{
-            OP_MOVE_UP = 0
-            OP_MOVE_DOWN = 1
-            OP_MOVE_LEFT = 2
-            OP_MOVE_RIGHT = 3
-            constructor(websocket){
-                this.websocket = websocket;
-            }
-
-            send(object){
-                this.websocket.send(JSON.stringify(object));
-            }
-
-            move_up(){
-                this.send({
-                    operation:this.OP_MOVE_UP
-                });
-            }
-
-            move_down(){
-                this.send({
-                    operation:this.OP_MOVE_DOWN
-                });
-            }
-
-            move_left(){
-                this.send({
-                    operation:this.OP_MOVE_LEFT
-                });
-            }
-
-            move_right(){
-                this.send({
-                    operation:this.OP_MOVE_RIGHT
-                });
-            }
-        }
-    </script>
+    
     <script>
         let display = new Display();
         // display.map = [
@@ -171,6 +237,18 @@
                     break;
                 case 68: // d
                     op.move_right();
+                    break;
+                case 38: // ↑
+                    op.face_up();
+                    break;
+                case 40: // ↓
+                    op.face_down();
+                    break;
+                case 37: // ←
+                    op.face_left();
+                    break;
+                case 39: // →
+                    op.face_right();
                     break;
             }
         }

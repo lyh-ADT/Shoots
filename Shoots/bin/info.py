@@ -15,5 +15,5 @@ class Info:
     def get_dict(self):
         return {
             'sound':self.sound,
-            'shooter':[i.position for i in self.shooter]
+            'shooter':self.shooter
         }

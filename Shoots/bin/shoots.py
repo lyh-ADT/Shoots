@@ -17,7 +17,10 @@ class Shoots:
             for j in self.players:
                 if i == j:
                     continue
-                info.shooter.append(j)
+                info.shooter.append({
+                    'position':j.position,
+                    'facing':j.face
+                })
             i.update_info(info)
 
     def update_frame(self):
@@ -29,7 +32,11 @@ class Shoots:
             Info.OP_MOVE_UP:lambda x: x.move_up(),
             Info.OP_MOVE_DOWN:lambda x: x.move_down(),
             Info.OP_MOVE_LEFT:lambda x: x.move_left(),
-            Info.OP_MOVE_RIGHT:lambda x: x.move_right()
+            Info.OP_MOVE_RIGHT:lambda x: x.move_right(),
+            Info.FACE_UP:lambda x: x.face_up(),
+            Info.FACE_DONW:lambda x: x.face_down(),
+            Info.FACE_LEFT:lambda x: x.face_left(),
+            Info.FACE_RIGHT:lambda x: x.face_right()
         }
         if player not in self.players:
             print("not join player operation !!!", player, operation)

@@ -42,6 +42,18 @@ class Shooter:
         if self.map.is_road(np):
             self.position = np
 
+    def face_up(self):
+        self.face = Info.FACE_UP
+    
+    def face_down(self):
+        self.face = Info.FACE_DONW
+    
+    def face_left(self):
+        self.face = Info.FACE_LEFT
+    
+    def face_right(self):
+        self.face = Info.FACE_RIGHT
+
     def get_dict(self):
         return {
             'facing':self.face,
