@@ -18,6 +18,36 @@ class Shooter:
     def get_info(self):
         return self.info
 
+    def can_see(self, shooter):
+        if self.position[1] == shooter.position[1]:
+            y = self.position[1]
+            if self.face == Info.FACE_UP and self.position[0] >= shooter.position[0]:
+                for x in range(shooter.position[0], self.position[0]):
+                    if not self.map.is_road((x, y)):
+                        return False
+                return True
+
+            if self.face == Info.FACE_DONW and self.position[0] <= shooter.position[0]:
+                for x in range(self.position[0], shooter.position[0]):
+                    if not self.map.is_road((x, y)):
+                        return False
+                return True
+        if self.position[0] == shooter.position[0]:
+            x = self.position[0]
+            if self.face == Info.FACE_LEFT and self.position[1] >= shooter.position[1]:
+                for y in range(shooter.position[1], self.position[1]):
+                    if not self.map.is_road((x, y)):
+                        return False
+                return True
+
+            if self.face == Info.FACE_RIGHT and self.position[1] <= shooter.position[1]:
+                for y in range(self.position[1], shooter.position[1]):
+                    if not self.map.is_road((x, y)):
+                        return False
+                return True
+
+        return False
+
     def shoot(self):
         if self.cd_count > 0:
             return

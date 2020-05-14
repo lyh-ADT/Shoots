@@ -17,10 +17,11 @@ class Shoots:
             for j in self.players:
                 if i == j:
                     continue
-                info.shooter.append({
-                    'position':j.position,
-                    'facing':j.face
-                })
+                if i.can_see(j):
+                    info.shooter.append({
+                        'position':j.position,
+                        'facing':j.face
+                    })
             i.update_info(info)
 
     def update_frame(self):
