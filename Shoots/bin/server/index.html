@@ -91,7 +91,7 @@
             }
 
             initCanvas(){
-                this.width = Math.min(window.innerWidth, window.innerHeight);
+                this.width = Math.min(window.innerWidth, window.innerHeight) - 5;
                 this.canvas = document.createElement("canvas");
                 this.canvas.width = this.canvas.height = this.width;
                 document.body.appendChild(this.canvas);
