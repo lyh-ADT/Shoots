@@ -40,6 +40,9 @@ class Shoots:
         player = Shooter(self.map)
         self.players.append(player)
         return player
+    
+    def remove_player(self, player):
+        self.players.remove(player)
 
     async def play(self):
         import tornado.gen

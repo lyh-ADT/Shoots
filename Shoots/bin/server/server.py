@@ -27,6 +27,7 @@ class Server:
 
         def on_close(self):
             Server.sockets.remove(self)
+            Server.game.remove_player(self.shooter)
         
         def send_infomation(self):
             self.write_message(self.shooter.get_dict())
@@ -55,6 +56,7 @@ class Server:
             try:
                 i.send_infomation()
             except tornado.websocket.WebSocketClosedError:
+                Server.game.remove_player(i.shooter)
                 self.sockets.remove(i)
         
 
