@@ -146,6 +146,18 @@
                 ctx.fill();
             }
 
+            drawText(x, y, text, size, color, offset=0){
+                const x_for_canvas = y*this.size_per_block+offset + (this.size_per_block / 2);
+                const y_for_canvas = x*this.size_per_block+offset + (this.size_per_block / 2);
+
+                let ctx = this.canvas.getContext("2d");
+                ctx.font =  `bold ${size}px serif`;
+                ctx.fillStyle = color;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x_for_canvas, y_for_canvas);
+            }
+
             getFacingGradient(x, y, size, offset, facing){
                 let ctx = this.canvas.getContext("2d");
                 const xc0 = y*this.size_per_block+offset;
@@ -179,7 +191,7 @@
                 return gradient;
             }
 
-            drawShooter(x, y, face, isSelf=false){
+            drawShooter(x, y, face, isSelf=false, cd=0){
                 x += 1;
                 y += 1;
                 const shooter_offset = 20;
@@ -187,6 +199,9 @@
                 
                 this.drawBlock(x, y, shooter_size, this.getFacingGradient(x, y, shooter_size, shooter_offset / 2, face), shooter_offset / 2, Math.PI / 4);
                 this.drawDot(x, y, shooter_size / 2, isSelf?"black":"yellow", shooter_offset / 2);
+                if(isSelf && cd > 0){
+                    this.drawText(x, y, cd, shooter_size, "red");
+                }
             }
 
             drawDead(){
@@ -203,7 +218,7 @@
                 }
                 this.map = data.map;
                 this.drawMap();
-                this.drawShooter(data.position[0], data.position[1], data.facing, true);
+                this.drawShooter(data.position[0], data.position[1], data.facing, true, parseInt(data.cd));
                 for(let i of data.info.shooter){
                     let pos = i.position;
                     let facing = i.facing;
