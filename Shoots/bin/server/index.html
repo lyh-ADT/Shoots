@@ -106,11 +106,11 @@
                 ctx.fillRect(0, 0, this.width, this.width);
             }
 
-            drawMap(){
+            drawMap(latency=0){
                 this.size_per_block = Math.round(this.width / (this.map.length+2));
 
                 this.drawBlock(0, 0, this.width, "black");
-
+                this.drawText(0,0, latency+"ms", this.size_per_block, "green", true);
                 for(let x in this.map){
                     for(let y in this.map[x]){
                         let color = "black";
@@ -146,12 +146,20 @@
                 ctx.fill();
             }
 
-            drawText(x, y, text, size, color, offset=0){
-                const x_for_canvas = y*this.size_per_block+offset + (this.size_per_block / 2);
-                const y_for_canvas = x*this.size_per_block+offset + (this.size_per_block / 2);
+            drawText(x, y, text, size, color, shrink=false){
+                const x_for_canvas = y*this.size_per_block + (this.size_per_block / 2);
+                const y_for_canvas = x*this.size_per_block + (this.size_per_block / 2);
 
                 let ctx = this.canvas.getContext("2d");
+
                 ctx.font =  `bold ${size}px serif`;
+                if(shrink){
+                    let textSize = ctx.measureText(text);
+                    if(textSize.width > this.size_per_block){
+                        let size = (this.size_per_block) / text.length;
+                        ctx.font =  `bold ${size}px serif`;
+                    }
+                }
                 ctx.fillStyle = color;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -217,7 +225,9 @@
                     return;
                 }
                 this.map = data.map;
-                this.drawMap();
+                const latency = Date.now() - parseInt(data.info.time);
+                console.log("latency: "+ latency);
+                this.drawMap(latency);
                 this.drawShooter(data.position[0], data.position[1], data.facing, true, parseInt(data.cd));
                 for(let i of data.info.shooter){
                     let pos = i.position;

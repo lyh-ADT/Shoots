@@ -1,3 +1,5 @@
+import time
+
 class Info:
     OP_MOVE_UP = 0
     OP_MOVE_DOWN = 1
@@ -16,5 +18,6 @@ class Info:
     def get_dict(self):
         return {
             'sound':self.sound,
-            'shooter':self.shooter
+            'shooter':self.shooter,
+            'time':round(time.time()*1000)
         }
