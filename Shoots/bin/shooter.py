@@ -11,6 +11,8 @@ class Shooter:
         self.info = Info() # infomation of environment(sound, vision)
         self.map = map
         self.position = self.map.spawn()
+        self.dead = False
+        self.shooted = False
     
     def update_info(self, info:Info):
         self.info = info
@@ -18,40 +20,47 @@ class Shooter:
     def get_info(self):
         return self.info
 
-    def can_see(self, shooter):
-        if self.position[1] == shooter.position[1]:
+    def targets(self):
+        targets = []
+        if self.face == Info.FACE_UP:
             y = self.position[1]
-            if self.face == Info.FACE_UP and self.position[0] >= shooter.position[0]:
-                for x in range(shooter.position[0], self.position[0]):
-                    if not self.map.is_road((x, y)):
-                        return False
-                return True
-
-            if self.face == Info.FACE_DONW and self.position[0] <= shooter.position[0]:
-                for x in range(self.position[0], shooter.position[0]):
-                    if not self.map.is_road((x, y)):
-                        return False
-                return True
-        if self.position[0] == shooter.position[0]:
+            for x in range(self.position[0], -1, -1):
+                if self.map.is_road((x, y)):
+                    targets.append((x, y))
+                else:
+                    break
+        elif self.face == Info.FACE_DONW:
+            y = self.position[1]
+            for x in range(self.position[0], self.map.size):
+                if self.map.is_road((x, y)):
+                    targets.append((x,y))
+                else:
+                    break
+        elif self.face == Info.FACE_LEFT:
             x = self.position[0]
-            if self.face == Info.FACE_LEFT and self.position[1] >= shooter.position[1]:
-                for y in range(shooter.position[1], self.position[1]):
-                    if not self.map.is_road((x, y)):
-                        return False
-                return True
+            for y in range(self.position[1], -1, -1):
+                if self.map.is_road((x, y)):
+                    targets.append((x, y))
+                else:
+                    break
+        elif self.face == Info.FACE_RIGHT:
+            x = self.position[0]
+            for y in range(self.position[1], self.map.size):
+                if self.map.is_road((x, y)):
+                    targets.append((x,y))
+                else:
+                    break
+        return targets
 
-            if self.face == Info.FACE_RIGHT and self.position[1] <= shooter.position[1]:
-                for y in range(self.position[1], shooter.position[1]):
-                    if not self.map.is_road((x, y)):
-                        return False
-                return True
-
-        return False
+    def can_see(self, shooter):
+        return shooter.position in self.targets()
 
     def shoot(self):
         if self.cd_count > 0:
-            return
-    
+            return []
+        self.shooted = True
+        self.cd_count = self.cd
+
     def move_up(self):
         np = (self.position[0]-1, self.position[1])
         if self.map.is_road(np):
@@ -86,6 +95,7 @@ class Shooter:
 
     def get_dict(self):
         return {
+            'dead':self.dead,
             'facing':self.face,
             'vision':self.vision,
             'listen':self.listen,

@@ -13,9 +13,15 @@ class Shoots:
         # simplely add each other, so they can see each other
         # for a little fun
         for i in self.players:
+            targets = []
+            if i.shooted:
+                targets = i.targets()
             info = Info()
             for j in self.players:
                 if i == j:
+                    continue
+                if j.position in targets:
+                    j.dead = True
                     continue
                 if i.can_see(j):
                     info.shooter.append({
@@ -37,7 +43,8 @@ class Shoots:
             Info.FACE_UP:lambda x: x.face_up(),
             Info.FACE_DONW:lambda x: x.face_down(),
             Info.FACE_LEFT:lambda x: x.face_left(),
-            Info.FACE_RIGHT:lambda x: x.face_right()
+            Info.FACE_RIGHT:lambda x: x.face_right(),
+            Info.OP_SHOOT:lambda x: x.shoot()
         }
         if player not in self.players:
             print("not join player operation !!!", player, operation)

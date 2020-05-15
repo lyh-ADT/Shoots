@@ -7,6 +7,7 @@ class Info:
     FACE_DONW = 5
     FACE_LEFT = 6
     FACE_RIGHT = 7
+    OP_SHOOT = 8
     
     def __init__(self):
         self.sound = []
