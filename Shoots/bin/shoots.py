@@ -10,18 +10,19 @@ class Shoots:
         self.update_frame_callback = None
 
     def update_model(self):
-        # simplely add each other, so they can see each other
-        # for a little fun
         for i in self.players:
             targets = []
             if i.shooted:
                 targets = i.targets()
+                i.shooted = False
+            i.cd_count = max(0, i.cd_count-1)
             info = Info()
             for j in self.players:
                 if i == j:
                     continue
                 if j.position in targets:
                     j.dead = True
+                    self.players.remove(j)
                     continue
                 if i.can_see(j):
                     info.shooter.append({
