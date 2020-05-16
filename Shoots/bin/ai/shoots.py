@@ -13,6 +13,8 @@ class AIShoots(Shoots):
         self.view = None
 
     def update_model(self):
+        if [i.dead for i in self.players].count(False) == 1:
+            raise Exception("Game over")
         for i in self.players:
             i.action()
         super().update_model()
