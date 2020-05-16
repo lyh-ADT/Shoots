@@ -33,7 +33,7 @@ Keep the project structure when you download or just clone the whole repo.Cause 
 ## Usage
 run the command below in the root of project
 ```
-python -u -m Shoots.bin.server
+python -u -m Shoots.bin.server.server
 ```
 access <http://localhost:9999/> to start the game.
 
