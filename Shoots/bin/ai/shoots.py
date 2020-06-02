@@ -1,6 +1,6 @@
 from Shoots.bin.shoots import Shoots
 from Shoots.bin.info import Info
-from Shoots.bin.ai.shooter import AIShooter
+from Shoots.bin.ai.shooter import RandomAIShooter as AIShooter
 
 class AIShoots(Shoots):
     def __init__(self):

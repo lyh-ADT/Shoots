@@ -1,7 +1,10 @@
 from Shoots.bin.shooter import Shooter
 import random
 
-class AIShooter(Shooter):
+class RandomAIShooter(Shooter):
+    """
+    a shooter that act random completely
+    """
     def action(self):
         options=[
             self.move_up,
