@@ -3,6 +3,9 @@ from Shoots.bin.info import Info
 from Shoots.bin.ai.shooter import RandomAIShooter as AIShooter
 
 class AIShoots(Shoots):
+    """
+    automatically add two AIShooter
+    """
     def __init__(self):
         super().__init__()
         

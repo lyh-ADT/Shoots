@@ -19,3 +19,12 @@ class RandomAIShooter(Shooter):
         ]
         op = random.randint(0, len(options)-1)
         options[op]()
+
+
+
+
+class CFRShooter(RandomAIShooter):
+    """
+    a shooter that trained with CFR
+    """
+    pass
