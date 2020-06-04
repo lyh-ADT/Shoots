@@ -2,6 +2,7 @@ from typing import Dict
 import copy
 import random
 import pickle
+import time
 
 from Shoots.bin.info import Info
 from Shoots.bin.shoots import Shoots
@@ -45,20 +46,128 @@ class Training:
     """
     http://modelai.gettysburg.edu/2013/cfr/cfr.pdf 3.4 Kuhn Poker Page: 11
     """
+
+    class Trainer:
+        def __init__(self, max_recursion_depth, num_actions, nodeMap:Dict[str, Node]):
+                self.max_recursion_depth = max_recursion_depth
+                self.current_recursion_depth = 0
+                self.loading_progress = 0
+                self.nodeMap = nodeMap
+                self.num_actions = num_actions
+
+        def print_loading(self):
+            self.loading_progress += 1
+            m = {
+                0:"-",
+                1:"\\",
+                2:"|",
+                3:"/"
+            }
+            if self.loading_progress >= 4:
+                self.loading_progress = 0
+            print("training... {}".format(m[self.loading_progress],), end="\b\r")
+
+        def cfr(self, server:Shoots, history:str, player_id:int) -> float:
+            self.print_loading()
+            if self.max_recursion_depth <= self.current_recursion_depth:
+                # print("reached max recursion depth")
+                return 0
+            self.current_recursion_depth += 1
+            server.update_model()
+            
+            if [i.dead for i in server.players].count(False) == 1:
+                actions = len(history) / 2
+
+                win = 1 if not server.players[player_id].dead else -1
+
+                # winner with less actions gets higher score, 
+                # loser with more actions (longer survival time) gets higher score
+                score = win * ((1 / actions) if actions > 0 else 0)
+
+                self.current_recursion_depth -= 1
+                return score
+
+            infoSet = self.__genInfoSet(server.players[player_id])
+
+            if not infoSet in self.nodeMap:
+                self.nodeMap[infoSet] = Node(self.num_actions, infoSet)
+
+            node = self.nodeMap[infoSet]
+            strategy = node.getStrategy(1)
+            util = [0] * self.num_actions # score of every action
+
+            nodeUtil = 0 # sum of score
+
+            for a in range(self.num_actions):
+                nextHistory = history + self.__mapAction(a)
+
+                newServer = copy.deepcopy(server)
+
+                newServer.process_input(newServer.players[player_id], a)
+
+                util[a] = self.cfr(newServer, nextHistory, player_id)
+
+                nodeUtil += strategy[a] * util[a]
+
+            for a in range(self.num_actions):
+                node.regretSum[a] += util[a] - nodeUtil
+
+            self.current_recursion_depth -= 1
+            return nodeUtil
+
+        def __genInfoSet(self, shooter:CFRShooter) -> str:
+            """
+            build infoSet
+            path avaliable: up down left right
+            facing enemy: 
+
+            """
+            infoSet = ""
+            map = shooter.map
+            position = shooter.position
+
+            infoSet += "1" if len(shooter.info.shooter) > 0 else "0"
+        
+            np = (position[0]-1, position[1])
+            infoSet += "1" if map.is_road(np) else "0"
+
+            np = (position[0]+1, position[1])
+            infoSet += "1" if map.is_road(np) else "0"
+
+            
+            np = (position[0], position[1]-1)
+            infoSet += "1" if map.is_road(np) else "0"
+
+            
+            np = (position[0], position[1]+1)
+            infoSet += "1" if map.is_road(np) else "0"
+
+            return infoSet
+
+        def __mapAction(self, action):
+            return {
+                Info.OP_MOVE_UP:"mu",
+                Info.OP_MOVE_DOWN:"md",
+                Info.OP_MOVE_LEFT:"ml",
+                Info.OP_MOVE_RIGHT:"mr",
+                Info.FACE_UP:"fu",
+                Info.FACE_DONW:"fd",
+                Info.FACE_LEFT:"fl",
+                Info.FACE_RIGHT:"fr",
+                Info.OP_SHOOT:"st"
+            }[action]
+
+
     def __init__(self, max_recursion_depth):
         self.max_recursion_depth = max_recursion_depth
-        self.current_recursion_depth = 0
-        self.random = random.Random()
         self.nodeMap:Dict[str, Node] = {}
         self.num_actions = 9
-        self.loading_progress = 0
 
     def train(self, iterations):
         
-        win_count = 0
         print(f"total epoch: {iterations}, {self.num_actions ** self.max_recursion_depth} route per epoch")
         for i in range(iterations):
-            print("epoch: {}\033[K".format(i+1,))
+            print("epoch: {}, start at: {}\033[K".format(i+1, time.asctime()))
             server = Shoots()
             server.players = [] # clear all players
 
@@ -67,11 +176,10 @@ class Training:
             server.players.append(p1)
             server.players.append(p2)
 
+            trainer = Training.Trainer(self.max_recursion_depth, self.num_actions, self.nodeMap)
+            trainer.cfr(server, '', 0)
+
             self.save("cur_train.params")
-
-            win_count += 1 if self.__cfr(server, '', p1, p2) else 0
-
-        print("win rate:", win_count / iterations)
 
     def save(self, filename):
         with open(filename, "wb") as output:
@@ -81,114 +189,12 @@ class Training:
         with open(filename, "rb") as input:
             t:Training = pickle.load(input)
             self.max_recursion_depth = t.max_recursion_depth
-            self.current_recursion_depth = t.current_recursion_depth
-            self.random = t.random
             self.nodeMap:Dict[str, Node] = t.nodeMap
             self.num_actions = t.num_actions
-            self.loading_progress = t.loading_progress
 
-    def print_loading(self):
-        self.loading_progress += 1
-        m = {
-            0:"-",
-            1:"\\",
-            2:"|",
-            3:"/"
-        }
-        if self.loading_progress >= 4:
-            self.loading_progress = 0
-        print("training... {}".format(m[self.loading_progress],), end="\b\r")
-
-
-    def __cfr(self, server:Shoots, history:str, p1:CFRShooter, p2:RandomAIShooter) -> float:
-        self.print_loading()
-        if self.max_recursion_depth <= self.current_recursion_depth:
-            # print("reached max recursion depth")
-            return -1
-        self.current_recursion_depth += 1
-        server.update_model()
-
-        if [i.dead for i in server.players].count(False) == 1:
-            actions = len(history)
-
-            win = 1 if not p1.dead else -1
-
-            # winner with less actions gets higher score, 
-            # loser with more actions (longer survival time) gets higher score
-            score = win * ((1 / actions) if actions > 0 else 0)
-
-            self.current_recursion_depth -= 1
-            return score
-
-        infoSet = self.__genInfoSet(p1)
-        
-        if not infoSet in self.nodeMap:
-            self.nodeMap[infoSet] = Node(self.num_actions, infoSet)
-        node = self.nodeMap[infoSet]
-        strategy = node.getStrategy(1)
-        util = [0] * self.num_actions # score of every action
-        nodeUtil = 0 # sum of score
-
-        for a in range(self.num_actions):
-            nextHistory = history + self.__mapAction(a)
-
-            newServer = copy.deepcopy(server)
-            newServer.process_input(newServer.players[0], a)
-            p2.action()
-            util[a] = self.__cfr(newServer, nextHistory, newServer.players[0], newServer.players[1])
-            nodeUtil += strategy[a] * util[a]
-
-        for a in range(self.num_actions):
-            regret = util[a] - nodeUtil
-            node.regretSum[a] += regret
-
-        self.current_recursion_depth -= 1
-        return nodeUtil
-        
-    def __genInfoSet(self, shooter:CFRShooter) -> str:
-        """
-        build infoSet
-        path avaliable: up down left right
-        facing enemy: 
-
-        """
-        infoSet = ""
-        map = shooter.map
-        position = shooter.position
-    
-        np = (position[0]-1, position[1])
-        infoSet += "1" if map.is_road(np) else "0"
-
-        np = (position[0]+1, position[1])
-        infoSet += "1" if map.is_road(np) else "0"
-
-        
-        np = (position[0], position[1]-1)
-        infoSet += "1" if map.is_road(np) else "0"
-
-        
-        np = (position[0], position[1]+1)
-        infoSet += "1" if map.is_road(np) else "0"
-
-        infoSet += "1" if len(shooter.info.shooter) > 0 else "0"
-        return infoSet
-
-    def __mapAction(self, action):
-        return {
-            Info.OP_MOVE_UP:"mu",
-            Info.OP_MOVE_DOWN:"md",
-            Info.OP_MOVE_LEFT:"ml",
-            Info.OP_MOVE_RIGHT:"mr",
-            Info.FACE_UP:"fu",
-            Info.FACE_DONW:"fd",
-            Info.FACE_LEFT:"fl",
-            Info.FACE_RIGHT:"fr",
-            Info.OP_SHOOT:"st"
-        }[action]
-    
     def print_nodeMap(self):
         print("{")
-        for k in self.nodeMap:
+        for k in sorted(self.nodeMap):
             print("\t", k, "\n\t", self.nodeMap[k], ",")
         print("}")
 
@@ -218,6 +224,5 @@ if __name__ == "__main__":
 
     trainer.max_recursion_depth = max_recursion_depth
 
-    trainer.train(100)
-    for k in trainer.nodeMap:
-        print(k, trainer.nodeMap[k])
+    trainer.train(30)
+    trainer.print_nodeMap()
