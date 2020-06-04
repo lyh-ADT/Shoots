@@ -4,7 +4,7 @@ import random
 import pickle
 
 from Shoots.bin.info import Info
-from Shoots.bin.ai.shoots import AIShoots
+from Shoots.bin.shoots import Shoots
 from Shoots.bin.ai.shooter import CFRShooter
 from Shoots.bin.ai.shooter import RandomAIShooter
 
@@ -12,9 +12,9 @@ class Node:
     def __init__(self, num_actions, infoSet):
         self.infoSet = infoSet
         self.num_actions = num_actions
-        self.regretSum = [0] * self.num_actions
-        self.strategy = [0] * self.num_actions
-        self.strategySum =  [0] * self.num_actions
+        self.regretSum = [0] * self.num_actions # positive mean hope to do, negative mean hope not to do
+        self.strategy = [0] * self.num_actions # normalized regretSum, negative regret will be 0, represent the possibility of winning
+        self.strategySum =  [0] * self.num_actions # with realizationWeight's strategy
 
     def getStrategy(self, realizationWeight) -> list:
         normalizingSum = 0
@@ -50,29 +50,29 @@ class Training:
         self.current_recursion_depth = 0
         self.random = random.Random()
         self.nodeMap:Dict[str, Node] = {}
-        self.num_actions = 8
+        self.num_actions = 9
         self.loading_progress = 0
 
     def train(self, iterations):
         
         win_count = 0
-        print(f"total epoch: {iterations}")
+        print(f"total epoch: {iterations}, {self.num_actions ** self.max_recursion_depth} route per epoch")
         for i in range(iterations):
             print("epoch: {}\033[K".format(i+1,))
-            server = AIShoots()
+            server = Shoots()
             server.players = [] # clear all players
 
             p1 = CFRShooter(server.map)
             p2 = CFRShooter(server.map)
             server.players.append(p1)
             server.players.append(p2)
-            
+
+            self.save("cur_train.params")
+
             win_count += 1 if self.__cfr(server, '', p1, p2) else 0
 
         print("win rate:", win_count / iterations)
 
-        self.save("cur_train.params")
-    
     def save(self, filename):
         with open(filename, "wb") as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
@@ -100,7 +100,7 @@ class Training:
         print("training... {}".format(m[self.loading_progress],), end="\b\r")
 
 
-    def __cfr(self, server:AIShoots, history:str, p1:CFRShooter, p2:RandomAIShooter) -> float:
+    def __cfr(self, server:Shoots, history:str, p1:CFRShooter, p2:RandomAIShooter) -> float:
         self.print_loading()
         if self.max_recursion_depth <= self.current_recursion_depth:
             # print("reached max recursion depth")
@@ -112,7 +112,10 @@ class Training:
             actions = len(history)
 
             win = 1 if not p1.dead else -1
-            score = win * (1 / actions)
+
+            # winner with less actions gets higher score, 
+            # loser with more actions (longer survival time) gets higher score
+            score = win * ((1 / actions) if actions > 0 else 0)
 
             self.current_recursion_depth -= 1
             return score
@@ -182,24 +185,39 @@ class Training:
             Info.FACE_RIGHT:"fr",
             Info.OP_SHOOT:"st"
         }[action]
+    
+    def print_nodeMap(self):
+        print("{")
+        for k in self.nodeMap:
+            print("\t", k, "\n\t", self.nodeMap[k], ",")
+        print("}")
+
+def show_trained():
+    trainer = Training(0)
+    trainer.load("cur_train.params")
+    trainer.print_nodeMap()
 
 if __name__ == "__main__":
     import sys, time
-    print("current recursionlimit:", sys.getrecursionlimit())
+    print(sys.argv)
+    if len(sys.argv) > 1:
+        show_trained()
+        exit(0)
+    
+    print("load trained params", "cur_train.params")
+    trainer = Training(0)
+    try:
+        trainer.load("cur_train.params")
+    except FileNotFoundError:
+        print("not found", "cur_train.params", "start from fresh")
+
     # resource.setrlimit(resource.RLIMIT_STACK, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
     max_recursion_depth = 5
-    sys.setrecursionlimit(max_recursion_depth*10)
+    sys.setrecursionlimit(max_recursion_depth*10) # some built-in functions need recursion
     print("max_recursion_depth=", max_recursion_depth)
-    time.sleep(3)
-    trainer = Training(max_recursion_depth)
-    trainer.train(10)
-    for k in trainer.nodeMap:
-        print(k, trainer.nodeMap[k])
 
-    del trainer
+    trainer.max_recursion_depth = max_recursion_depth
 
-    print("loaded training")
-    trainer = Training(0)
-    trainer.load("cur_train.params")
+    trainer.train(100)
     for k in trainer.nodeMap:
         print(k, trainer.nodeMap[k])
