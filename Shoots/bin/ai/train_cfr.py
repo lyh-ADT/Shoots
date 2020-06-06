@@ -54,6 +54,7 @@ class Training:
                 self.loading_progress = 0
                 self.nodeMap = nodeMap
                 self.num_actions = num_actions
+                self.history_window = 1
 
         def print_loading(self):
             self.loading_progress += 1
@@ -87,7 +88,7 @@ class Training:
                 self.current_recursion_depth -= 1
                 return score
 
-            infoSet = self.__genInfoSet(server.players[player_id])
+            infoSet = self.__genInfoSet(server.players[player_id], history)
 
             if not infoSet in self.nodeMap:
                 self.nodeMap[infoSet] = Node(self.num_actions, infoSet)
@@ -115,7 +116,7 @@ class Training:
             self.current_recursion_depth -= 1
             return nodeUtil
 
-        def __genInfoSet(self, shooter:CFRShooter) -> str:
+        def __genInfoSet(self, shooter:CFRShooter, history:str) -> str:
             """
             build infoSet
             path avaliable: up down left right
@@ -142,6 +143,7 @@ class Training:
             np = (position[0], position[1]+1)
             infoSet += "1" if map.is_road(np) else "0"
 
+            infoSet += history[:-self.history_window*2]
             return infoSet
 
         def __mapAction(self, action):
@@ -218,7 +220,7 @@ if __name__ == "__main__":
         print("not found", "cur_train.params", "start from fresh")
 
     # resource.setrlimit(resource.RLIMIT_STACK, (resource.RLIM_INFINITY, resource.RLIM_INFINITY))
-    max_recursion_depth = 5
+    max_recursion_depth = 6
     sys.setrecursionlimit(max_recursion_depth*10) # some built-in functions need recursion
     print("max_recursion_depth=", max_recursion_depth)
 
