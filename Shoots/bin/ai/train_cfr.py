@@ -38,6 +38,12 @@ class Node:
                 avgStrategy[a] = self.strategySum[a] / normalizingSum
             else:
                 avgStrategy[a] = 1 / self.num_actions
+    
+    def update(self, utils:list):
+        nodeUtil = sum([self.strategy[a] * utils[a] for a in range(self.num_actions)])
+        for a in range(self.num_actions):
+            self.regretSum[a] += utils[a] - nodeUtil
+        return nodeUtil
 
     def __repr__(self):
         return str(self.getStrategy(1))
@@ -88,16 +94,7 @@ class Training:
                 self.current_recursion_depth -= 1
                 return score
 
-            infoSet = self.__genInfoSet(server.players[player_id], history)
-
-            if not infoSet in self.nodeMap:
-                self.nodeMap[infoSet] = Node(self.num_actions, infoSet)
-
-            node = self.nodeMap[infoSet]
-            strategy = node.getStrategy(1)
             util = [0] * self.num_actions # score of every action
-
-            nodeUtil = 0 # sum of score
 
             for a in range(self.num_actions):
                 nextHistory = history + self.__mapAction(a)
@@ -108,13 +105,17 @@ class Training:
 
                 util[a] = self.cfr(newServer, nextHistory, player_id)
 
-                nodeUtil += strategy[a] * util[a]
-
-            for a in range(self.num_actions):
-                node.regretSum[a] += util[a] - nodeUtil
+            infoSet = self.__genInfoSet(server.players[player_id], history)
+            node = self.__getNode(infoSet)
+            nodeUtil = node.update(util)
 
             self.current_recursion_depth -= 1
             return nodeUtil
+        
+        def __getNode(self, infoSet):
+            if not infoSet in self.nodeMap:
+                self.nodeMap[infoSet] = Node(self.num_actions, infoSet)
+            return self.nodeMap[infoSet]
 
         def __genInfoSet(self, shooter:CFRShooter, history:str) -> str:
             """
@@ -143,7 +144,7 @@ class Training:
             np = (position[0], position[1]+1)
             infoSet += "1" if map.is_road(np) else "0"
 
-            infoSet += history[:-self.history_window*2]
+            infoSet += history[-self.history_window*2:]
             return infoSet
 
         def __mapAction(self, action):
