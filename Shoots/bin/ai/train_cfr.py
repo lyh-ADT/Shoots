@@ -40,6 +40,7 @@ class Node:
                 avgStrategy[a] = 1 / self.num_actions
     
     def update(self, utils:list):
+        self.getStrategy(1)
         nodeUtil = sum([self.strategy[a] * utils[a] for a in range(self.num_actions)])
         for a in range(self.num_actions):
             self.regretSum[a] += utils[a] - nodeUtil
@@ -174,8 +175,19 @@ class Training:
             server = Shoots()
             server.players = [] # clear all players
 
+            server.map.size = 5
+            server.map.map = [
+                [server.map.ROAD] * 5
+            ] * 5
+
+            for i in server.map.get_view():
+                for j in i:
+                    print(j, end='')
+                print()
+
             p1 = CFRShooter(server.map)
             p2 = CFRShooter(server.map)
+            print(f"initial position: p1{p1.position}, p2{p2.position}")
             server.players.append(p1)
             server.players.append(p2)
 
