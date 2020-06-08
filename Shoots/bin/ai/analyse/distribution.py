@@ -7,15 +7,24 @@ training = Training(0)
 training.load("cur_train.params")
 
 def count_column(nodeMap, bitmap_label=None, history_label=None):
+    """
+    return a dict{
+        action: [with_label_count, without_label_count]
+    }
+    """
     data = {}
     for k in nodeMap:
-        if bitmap_label and k[bitmap_label[0]:bitmap_label[0]+1] != bitmap_label[1]:
-            continue
-        if history_label and history_label not in k:
-            continue
         strategy = nodeMap[k].getStrategy(1)
         action = strategy.index(max(strategy))
-        data[action] = data.get(action, 0) + 1
+        data[action] = data.get(action, [0, 0])
+        if bitmap_label and k[bitmap_label[0]:bitmap_label[0]+1] != bitmap_label[1]:
+            data[action][1] += 1
+            continue
+        if history_label and history_label not in k:
+            data[action][1] += 1
+            continue
+        
+        data[action][0] += 1
     return data
 
 def count_all(nodeMap):
@@ -42,17 +51,24 @@ data = count_all(training.nodeMap)
 print(data)
 
 def draw_one(plt, data, training):
-    numbers = [0] * training.num_actions
+    width = 0.35
+    with_numbers = [0] * training.num_actions
+    without_numbers = [0] * training.num_actions
     labels = list(range(training.num_actions))
     for k in data:
-        numbers[k] = data[k]
+        with_numbers[k], without_numbers[k] = data[k]
 
-    plt.bar(labels, numbers, tick_label=labels)
+    plt.bar([i - (width/2) for i in labels], with_numbers, width, label="with")
+    plt.bar([i + (width/2) for i in labels], without_numbers, width, label="without")
+    plt.set_xticks(labels)
+    plt.set_xticklabels(labels)
+    plt.legend()
 
-colums = math.ceil(math.sqrt(len(data)))
+colums = 5
+rows = math.ceil(len(data) / colums)
 
 for i, k in enumerate(data):
-    sp = plt.subplot(colums, colums, i+1)
+    sp = plt.subplot(rows, colums, i+1)
     sp.title.set_text(k)
     draw_one(sp, data[k], training)
 
