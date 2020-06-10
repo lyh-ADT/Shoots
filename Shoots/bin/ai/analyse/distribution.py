@@ -1,10 +1,15 @@
 import matplotlib.pyplot as plt
 import math
+import sys
 
 from Shoots.bin.ai.train_cfr import Training,Node
 
 training = Training(0)
-training.load("cur_train.params")
+
+if len(sys.argv) > 1:
+    training.load(sys.argv[1])
+else:
+    training.load("cur_train.params")
 
 def count_column(nodeMap, bitmap_label=None, history_label=None):
     """

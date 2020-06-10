@@ -6,8 +6,8 @@ import signal
 import json
 import threading
 
-from Shoots.bin.ai.shoots import AIShoots
-from Shoots.bin.ai.shooter import AIShooter
+from Shoots.bin.ai.shoots import AIShoots, AIShooter
+from Shoots.bin.ai.train_cfr import Training, Node
 
 class Server:
     game = AIShoots()

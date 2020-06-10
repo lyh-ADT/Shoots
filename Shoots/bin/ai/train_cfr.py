@@ -98,7 +98,7 @@ class Training:
             util = [0] * self.num_actions # score of every action
 
             for a in range(self.num_actions):
-                nextHistory = history + self.__mapAction(a)
+                nextHistory = history + server.players[player_id].mapAction(a)
 
                 newServer = copy.deepcopy(server)
 
@@ -106,7 +106,7 @@ class Training:
 
                 util[a] = self.cfr(newServer, nextHistory, player_id)
 
-            infoSet = self.__genInfoSet(server.players[player_id], history)
+            infoSet = server.players[player_id].genInfoSet(self.history_window)
             node = self.__getNode(infoSet)
             nodeUtil = node.update(util)
 
@@ -118,54 +118,11 @@ class Training:
                 self.nodeMap[infoSet] = Node(self.num_actions, infoSet)
             return self.nodeMap[infoSet]
 
-        def __genInfoSet(self, shooter:CFRShooter, history:str) -> str:
-            """
-            build infoSet
-            path avaliable: up down left right
-            facing enemy: 
-
-            """
-            infoSet = ""
-            map = shooter.map
-            position = shooter.position
-
-            infoSet += "1" if len(shooter.info.shooter) > 0 else "0"
-        
-            np = (position[0]-1, position[1])
-            infoSet += "1" if map.is_road(np) else "0"
-
-            np = (position[0]+1, position[1])
-            infoSet += "1" if map.is_road(np) else "0"
-
-            
-            np = (position[0], position[1]-1)
-            infoSet += "1" if map.is_road(np) else "0"
-
-            
-            np = (position[0], position[1]+1)
-            infoSet += "1" if map.is_road(np) else "0"
-
-            infoSet += history[-self.history_window*2:]
-            return infoSet
-
-        def __mapAction(self, action):
-            return {
-                Info.OP_MOVE_UP:"mu",
-                Info.OP_MOVE_DOWN:"md",
-                Info.OP_MOVE_LEFT:"ml",
-                Info.OP_MOVE_RIGHT:"mr",
-                Info.FACE_UP:"fu",
-                Info.FACE_DONW:"fd",
-                Info.FACE_LEFT:"fl",
-                Info.FACE_RIGHT:"fr",
-                Info.OP_SHOOT:"st"
-            }[action]
-
-
     def __init__(self, max_recursion_depth):
         self.max_recursion_depth = max_recursion_depth
         self.nodeMap:Dict[str, Node] = {}
         self.num_actions = 9
+        self.history_window = 1
 
     def train(self, iterations):
         
@@ -202,7 +159,7 @@ class Training:
 
     def load(self, filename):
         with open(filename, "rb") as input:
-            t:Training = pickle.load(input)
+            t = pickle.load(input)
             self.max_recursion_depth = t.max_recursion_depth
             self.nodeMap:Dict[str, Node] = t.nodeMap
             self.num_actions = t.num_actions

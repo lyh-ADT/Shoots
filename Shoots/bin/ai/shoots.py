@@ -1,6 +1,6 @@
 from Shoots.bin.shoots import Shoots
 from Shoots.bin.info import Info
-from Shoots.bin.ai.shooter import RandomAIShooter as AIShooter
+from Shoots.bin.ai.shooter import CFRShooter as AIShooter
 
 class AIShoots(Shoots):
     """
@@ -8,7 +8,9 @@ class AIShoots(Shoots):
     """
     def __init__(self):
         super().__init__()
-        
+        self.map.map = [
+                [self.map.ROAD] * 5
+            ] * 5
         self.players.append(AIShooter(self.map))
         self.players.append(AIShooter(self.map))
 
@@ -16,6 +18,8 @@ class AIShoots(Shoots):
         self.view = None
 
     def update_model(self):
+        if len(self.viewers) == 0:
+            return
         if [i.dead for i in self.players].count(False) == 1:
             raise Exception("Game over")
         for i in self.players:
