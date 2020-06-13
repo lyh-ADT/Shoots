@@ -2,7 +2,8 @@
 2D Overlooking Shooting Game
 
 using [tornado](https://github.com/tornadoweb/tornado) framework to handle communication, all game communication using websocket.  
-using canvas to display.
+using canvas to display.     
+having CFR trained AI enemy. [here](https://github.com/lyh-ADT/Shoots/tree/master/Shoots/bin/ai)
 
 ![](./images/vision_demo.jpg)
 
